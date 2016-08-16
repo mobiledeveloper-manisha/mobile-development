@@ -1,0 +1,83 @@
+
+    <div class="container" ng-controller="IndexController">
+        <div class="row row-content">
+            <div class="col-xs-12 col-sm-3 col-sm-push-9">
+                <p style="padding:20px;"></p>
+                <h3 align=center>Our Lipsmacking Culinary Creations</h3>
+            </div>
+            <div class="col-xs-12 col-sm-9 col-sm-pull-3">
+				<div class="media">
+                    <div class="media-left media-middle">
+		                <a ui-sref="app.dishdetails({id: featureddish._id})">
+                        <img class="media-object img-thumbnail"
+                         src="{{featureddish.image}}" alt="{{featureddish.name}}">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <h2 class="media-heading">{{featureddish.name}}
+							<span class="label label-danger">{{featureddish.label}}</span>
+							<span class="badge">{{featureddish.price | currency}}</span>
+						</h2>
+                        
+                        <p>{{featureddish.description}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row row-content">
+            <div class="col-xs-12 col-sm-3">
+                <p style="padding:20px;"></p>
+                <h3 align=center>This Month's Promotions</h3>
+            </div>
+            <div class="col-xs-12 col-sm-9">
+
+                <div class="media">
+                    <div class="media-left media-middle">
+					  <a href="#">
+	                    <img class="media-object img-thumbnail" ng-src={{promationdish.image}} alt="{{promationdish.name}}">
+	                  </a>
+                
+                       
+                    </div>
+                    <div class="media-body">
+                        <h2 class="media-heading">{{promationdish.name}}
+							<span class="label label-danger">{{promationdish.label}}</span>
+							<span class="badge">{{promationdish.price | currency}}</span>
+						</h2>
+                        
+                        <p>{{promationdish.description}}.</p>
+
+                    </div>
+                </div>
+            </div>
+
+	      </div>
+
+        <div class="row row-content">
+            <div class="col-xs-12 col-sm-3 col-sm-push-9">
+                <p style="padding:20px;"></p>
+                <h3 align=center>Meet our Culinary Specialists</h3>
+            </div>
+            <div class="col-xs-12 col-sm-9 col-sm-pull-3">
+				 <div class="media">
+                    <div class="media-left media-middle">
+                        <a href="#">
+                        <img class="media-object img-thumbnail"
+                         src="{{executivechef.image}}" alt="Alberto Somayya">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <h3 class="media-heading">{{executivechef.name}}
+							<small>{{executivechef.designation}}</small>						
+						</h3>
+
+                        <p>{{executivechef.description}}               </p>
+
+                    </div>
+                </div> 
+
+            </div>
+        </div>
+    </div>
