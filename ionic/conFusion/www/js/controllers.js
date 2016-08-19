@@ -156,7 +156,7 @@ angular.module('conFusion.controllers', [])
                 }
             };
         }])
-        .controller('DishDetailController', ['$scope', '$stateParams', 'menuFactory', 'baseURL', function($scope, $stateParams, menuFactory, baseURL) {
+        .controller('DishDetailController', ['$scope', '$stateParams', 'menuFactory', 'baseURL', '$ionicPopover', 'favoriteFactory',function($scope, $stateParams, menuFactory, baseURL , $ionicPopover,favoriteFactory) {
             $scope.baseURL = baseURL;
 
 
@@ -175,6 +175,39 @@ angular.module('conFusion.controllers', [])
                                 $scope.message = "Error: "+response.status + " " + response.statusText;
                             }
             );
+			
+			 $scope.addFavorite = function (index) {
+
+				favoriteFactory.addToFavorites(index);
+				$scope.popover.hide();
+			}
+
+			  // .fromTemplateUrl() method
+			  $ionicPopover.fromTemplateUrl('templates/dish-detail-popover.html', {
+				scope: $scope
+			  }).then(function(popover) {
+				$scope.popover = popover;
+			  });
+
+			  $scope.openPopover = function($event) {
+				$scope.popover.show($event);
+			  };
+			  $scope.closePopover = function() {
+				$scope.popover.hide();
+			  };
+			  //Cleanup the popover when we're done with it!
+			  $scope.$on('$destroy', function() {
+				$scope.popover.remove();
+			  });
+			  // Execute action on hide popover
+			  $scope.$on('popover.hidden', function() {
+				// Execute action
+			  });
+			  // Execute action on remove popover
+			  $scope.$on('popover.removed', function() {
+				// Execute action
+			  });
+
 
             
         }])
@@ -189,7 +222,7 @@ angular.module('conFusion.controllers', [])
                 console.log($scope.mycomment);
                 
                 $scope.dish.comments.push($scope.mycomment);
-        menuFactory.getDishes().update({id:$scope.dish.id},$scope.dish);
+       			 menuFactory.getDishes().update({id:$scope.dish.id},$scope.dish);
                 
                 $scope.commentForm.$setPristine();
                 
@@ -223,20 +256,31 @@ angular.module('conFusion.controllers', [])
   
             
         }])
-		.controller('FavoritesController', ['$scope', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicListDelegate', function ($scope, menuFactory, favoriteFactory, baseURL, $ionicListDelegate) {
-		
-			$scope.baseURL = baseURL;
+		.controller('FavoritesController', ['$scope', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicListDelegate', '$ionicPopup', '$ionicLoading', '$timeout', function ($scope, menuFactory, favoriteFactory, baseURL, $ionicListDelegate, $ionicPopup, $ionicLoading, $timeout) {
+
+		    $scope.baseURL = baseURL;
 			$scope.shouldShowDelete = false;
-		
+
+			$ionicLoading.show({
+				template: '<ion-spinner></ion-spinner> Loading...'
+			});
+
 			$scope.favorites = favoriteFactory.getFavorites();
-		
+
 			$scope.dishes = menuFactory.getDishes().query(
 				function (response) {
-					$scope.dishes = response;
+				    $scope.dishes = response;
+				    $timeout(function () {
+				        $ionicLoading.hide();
+				    }, 1000);
 				},
 				function (response) {
-					$scope.message = "Error: " + response.status + " " + response.statusText;
+				    $scope.message = "Error: " + response.status + " " + response.statusText;
+				    $timeout(function () {
+				        $ionicLoading.hide();
+				    }, 1000);
 				});
+		
 			console.log($scope.dishes, $scope.favorites);
 		
 			$scope.toggleDelete = function () {
@@ -245,11 +289,28 @@ angular.module('conFusion.controllers', [])
 			}
 		
 			$scope.deleteFavorite = function (index) {
-				
-				favoriteFactory.deleteFromFavorites(index);
+
+				var confirmPopup = $ionicPopup.confirm({
+				    title: 'Confirm Delete',
+				    template: 'Are you sure you want to delete this item?'
+				});
+
+				confirmPopup.then(function (res) {
+				    if (res) {
+				        console.log('Ok to delete');
+				        favoriteFactory.deleteFromFavorites(index);
+				    } else {
+				        console.log('Canceled delete');
+				    }
+				});
+
 				$scope.shouldShowDelete = false;
 
-    }}])
+			}
+
+
+
+		}])
 	.filter('favoriteFilter', function () {
     return function (dishes, favorites) {
         var out = [];
