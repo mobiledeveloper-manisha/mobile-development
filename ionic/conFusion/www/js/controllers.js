@@ -71,7 +71,6 @@ angular.module('conFusion.controllers', [])
 		}, 1000);
 	  };    
   
-  
 })
 	.controller('MenuController', ['$scope', 'menuFactory', 'favoriteFactory', 'baseURL', '$ionicListDelegate', function ($scope, menuFactory, favoriteFactory, baseURL, $ionicListDelegate) {
 
@@ -156,7 +155,7 @@ angular.module('conFusion.controllers', [])
                 }
             };
         }])
-        .controller('DishDetailController', ['$scope', '$stateParams', 'menuFactory', 'baseURL', '$ionicPopover', 'favoriteFactory',function($scope, $stateParams, menuFactory, baseURL , $ionicPopover,favoriteFactory) {
+        .controller('DishDetailController', ['$scope', '$stateParams', 'menuFactory', 'baseURL', '$ionicPopover', 'favoriteFactory','$ionicModal', '$timeout', '$ionicLoading',function($scope, $stateParams, menuFactory, baseURL , $ionicPopover,favoriteFactory,$ionicModal, $timeout,$ionicLoading) {
             $scope.baseURL = baseURL;
 
 
@@ -167,49 +166,90 @@ angular.module('conFusion.controllers', [])
             
             $scope.dish = menuFactory.getDishes().get({id:parseInt($stateParams.id,10)})
             .$promise.then(
-                            function(response){
-                                $scope.dish = response;
-                                $scope.showDish = true;
-                            },
-                            function(response) {
-                                $scope.message = "Error: "+response.status + " " + response.statusText;
-                            }
+                function(response){
+                    $scope.dish = response;
+                    $scope.showDish = true;
+                },
+                function(response) {
+                    $scope.message = "Error: "+response.status + " " + response.statusText;
+                }
             );
-			
+			// task 2 code start
 			 $scope.addFavorite = function (index) {
 
 				favoriteFactory.addToFavorites(index);
 				$scope.popover.hide();
+				$ionicLoading.show({
+					template: 'Dish added to My Favorites!'
+				});
+			
+				$timeout(function() {
+					$ionicLoading.hide();
+				}, 1000)	;
 			}
+			// task 2 code end
+			
+		  // task 1 code start
+		  // .fromTemplateUrl() method
+		  $ionicPopover.fromTemplateUrl('templates/dish-detail-popover.html', {
+			scope: $scope
+		  }).then(function(popover) {
+			$scope.popover = popover;
+		  });
 
-			  // .fromTemplateUrl() method
-			  $ionicPopover.fromTemplateUrl('templates/dish-detail-popover.html', {
-				scope: $scope
-			  }).then(function(popover) {
-				$scope.popover = popover;
-			  });
+		  $scope.openPopover = function($event) {
+			$scope.popover.show($event);
+		  };
+		  $scope.closePopover = function() {
+			$scope.popover.hide();
+		  };
+		  //Cleanup the popover when we're done with it!
+		  $scope.$on('$destroy', function() {
+			$scope.popover.remove();
+		  });
+		  // task 2 code end
 
-			  $scope.openPopover = function($event) {
-				$scope.popover.show($event);
-			  };
-			  $scope.closePopover = function() {
-				$scope.popover.hide();
-			  };
-			  //Cleanup the popover when we're done with it!
-			  $scope.$on('$destroy', function() {
-				$scope.popover.remove();
-			  });
-			  // Execute action on hide popover
-			  $scope.$on('popover.hidden', function() {
-				// Execute action
-			  });
-			  // Execute action on remove popover
-			  $scope.$on('popover.removed', function() {
-				// Execute action
-			  });
+		  // add comment code task 3 start
+		  $scope.commentData = {};
+	
+		  // Create the reserve modal that we will use later
+		  $ionicModal.fromTemplateUrl('templates/dish-comment.html', {
+			scope: $scope
+		  }).then(function(modal) {
+			$scope.addCommentForm = modal;
+		  });
+	
+		  // Triggered in the reserve modal to close it
+		  $scope.closeCommentForm = function() {
+			$scope.addCommentForm.hide();
+		  };
+	
+		  // Open the reserve modal
+		  $scope.showCommentForm = function() {
+			$scope.popover.hide();
+			$scope.addCommentForm.show();
+		  };
+	
+		  // Perform the reserve action when the user submits the reserve form
+		  $scope.addComment = function() {
+				console.log('Adding Comment', $scope.commentData);
+				$scope.commentData.date = new Date().toISOString();
+				console.log($scope.commentData);
+				$scope.dish.comments.push($scope.commentData);
+				menuFactory.getDishes().update({id:$scope.dish.id},$scope.dish);
+				$scope.commentData = {rating:5, author:"", comment:""};
+				$scope.closeCommentForm();
+				$ionicLoading.show({
+						template: 'Comment added to dish succesfully!'
+				});
 
+				$timeout(function() {
 
-            
+						    $ionicLoading.hide();
+
+				}, 1000);
+		  };    
+	  
         }])
 
         .controller('DishCommentController', ['$scope', 'menuFactory', function($scope,menuFactory) {
